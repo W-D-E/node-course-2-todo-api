@@ -6,13 +6,25 @@ const {app} = require('./../server');
 //requiring the Todo model
 const {Todo} = require('./../models/todo');
 
+//dummy todos array
+const todos = [{
+  text: 'First todo',
+}, {
+  text: 'Second todo'
+}];
 
 //On utilise BeforeEach to pour s'assurer que certaine choses soits
 //bien en place avant CHAQUE 'it' tests
+// beforeEach((done) => {
+//   //supprime tous les docs de todos
+//   Todo.remove({}).then(() => done());
+// });
+//modifiée pour route GET /todos
 beforeEach((done) => {
   //supprime tous les docs de todos
-
-  Todo.remove({}).then(() => done());
+  Todo.remove({}).then(() => {
+    return Todo.insertMany(todos);
+  }).then(() => done());
 });
 //on démarre chaque test avec zéros todos
 
@@ -34,7 +46,7 @@ describe('POST /todos', () => {
         return done(err);
       }
 
-      Todo.find().then((todos) => {
+      Todo.find({text}).then((todos) => {
         expect(todos.length).toBe(1);//if either of these fail the test is still going to pass
         expect(todos[0].text).toBe(text);//if either of these fail the test is still going to pass
         done();
@@ -58,11 +70,24 @@ describe('POST /todos', () => {
       }
 
       Todo.find().then((todos) => {
-        expect(todos.length).toBe(0);
+        expect(todos.length).toBe(2);
         done();
       }).catch((e) => {
         done(e);
       });
     });
+  });
+});
+
+describe('GET /todos', () => {
+
+  it('should get all todos', (done) => {
+    request(app)
+      .get('/todos')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todos.length).toBe(2);
+      })
+      .end(done);
   });
 });
