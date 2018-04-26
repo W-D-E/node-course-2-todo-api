@@ -12,6 +12,8 @@ var app = express();
 app.use(bodyParser.json());
 
 //CRUD : Create Read Update and Delete
+
+//POST /todos
 app.post('/todos', (req, res) => {
   //on récupère les données POST
   var todo = new Todo({
@@ -27,7 +29,17 @@ app.post('/todos', (req, res) => {
   });
 });
 
+//GET /todos
+app.get('/todos', (req, res) => {
 
+  Todo.find().then((todos) => {
+    res.send({todos});
+  }, (e) => {
+    res.status(400).send(e);
+  });
+});
+
+//app LISTEN
 app.listen(3000, () => {
   console.log('Started on port 3000');
 });
